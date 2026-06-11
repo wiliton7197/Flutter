@@ -1,4 +1,4 @@
-# Explicación Línea por Línea del Código Flutter para Consumir una API con MockAPI
+# Flutter para Consumir una API con MockAPI sin usar async
 
 ## Introducción
 
@@ -12,54 +12,49 @@ Este proyecto desarrollado en Flutter permite consumir datos desde una API cread
 import 'package:flutter/material.dart';
 ```
 
-## Explicación
+### Explicación
 
-Importa la librería principal de Flutter para construir interfaces gráficas.
+Importa la biblioteca principal de Flutter para construir interfaces gráficas.
 
 Permite utilizar widgets como:
 
-* MaterialApp
-* Scaffold
-* AppBar
-* Text
-* ElevatedButton
-* ListView
-* ListTile
+- MaterialApp
+- Scaffold
+- AppBar
+- ElevatedButton
+- ListView
+- Text
+- CircularProgressIndicator
+
+---
 
 ```dart
 import 'dart:convert';
 ```
 
-## Explicación
+### Explicación
 
-Importa herramientas para convertir datos JSON a objetos de Dart.
+Importa herramientas para trabajar con JSON.
 
-Se utilizará:
+Se utiliza principalmente para convertir la respuesta de la API en objetos que Flutter pueda manejar.
+
+Ejemplo:
 
 ```dart
-jsonDecode()
+jsonDecode(response.body)
 ```
 
-para convertir la respuesta de la API en una lista que Flutter pueda manejar.
+---
 
 ```dart
 import 'package:http/http.dart' as http;
 ```
 
-## Explicación
+### Explicación
 
-Importa el paquete HTTP.
+Importa la librería HTTP que permite realizar peticiones a servicios web.
 
-Permite realizar peticiones a servidores web utilizando métodos como:
-
-* GET
-* POST
-* PUT
-* DELETE
-
-El alias `http` se utiliza para acceder a sus métodos.
-
-### Ejemplo
+El alias `http` facilita escribir:
 
 ```dart
 http.get(...)
@@ -75,39 +70,24 @@ void main() {
 }
 ```
 
-## Explicación
+### Explicación
 
 Es el punto de entrada de toda aplicación Flutter.
 
-### Línea por línea
+### ¿Qué hace?
 
-```dart
-void main()
-```
-
-Función principal que se ejecuta primero.
-
-```dart
-runApp(...)
-```
-
-Inicia la aplicación Flutter.
-
-```dart
-const MyApp()
-```
-
-Crea una instancia del widget principal.
+- Flutter inicia la ejecución desde aquí.
+- `runApp()` carga el widget principal de la aplicación.
 
 ---
 
-# 3. Widget Principal
+# 3. Clase Principal de la Aplicación
 
 ```dart
 class MyApp extends StatelessWidget {
 ```
 
-## Explicación
+### Explicación
 
 Se crea una clase llamada `MyApp`.
 
@@ -117,106 +97,116 @@ Hereda de:
 StatelessWidget
 ```
 
-porque no necesita almacenar estados.
+Esto significa que no tiene estados que cambien durante la ejecución.
+
+---
 
 ```dart
 const MyApp({super.key});
 ```
 
+### Explicación
+
 Constructor de la clase.
 
-```dart
-@override
-Widget build(BuildContext context)
-```
-
-Método encargado de construir la interfaz.
-
-```dart
-return const MaterialApp(
-```
-
-Crea la aplicación utilizando Material Design.
-
-```dart
-home: PantallaUsuarios(),
-```
-
-Define la primera pantalla que verá el usuario.
+Permite identificar el widget dentro del árbol de widgets de Flutter.
 
 ---
 
-# 4. Creación de la Pantalla de Usuarios
+```dart
+@override
+Widget build(BuildContext context) {
+```
+
+### Explicación
+
+El método `build()` construye visualmente el widget.
+
+---
+
+```dart
+return const MaterialApp(
+  home: PantallaUsuarios(),
+);
+```
+
+### Explicación
+
+Se crea una aplicación Material Design.
+
+La pantalla inicial será:
+
+```dart
+PantallaUsuarios()
+```
+
+---
+
+# 4. Widget Stateful para Manejar Datos
 
 ```dart
 class PantallaUsuarios extends StatefulWidget {
 ```
 
-## Explicación
+### Explicación
 
-Se crea una pantalla con estado.
+Se utiliza un StatefulWidget porque los datos cambiarán después de llamar a la API.
 
-Se utiliza `StatefulWidget` porque los datos cambiarán cuando lleguen desde la API.
+---
 
 ```dart
 const PantallaUsuarios({super.key});
 ```
 
+### Explicación
+
 Constructor de la pantalla.
-
-```dart
-@override
-State<PantallaUsuarios> createState()
-```
-
-Genera el estado asociado al widget.
-
-```dart
-return _PantallaUsuariosState();
-```
-
-Devuelve la clase donde se manejarán los datos y cambios visuales.
 
 ---
 
-# 5. Clase de Estado
+```dart
+@override
+State<PantallaUsuarios> createState() {
+  return _PantallaUsuariosState();
+}
+```
+
+### Explicación
+
+Asocia este widget con su estado.
+
+---
+
+# 5. Clase Estado
 
 ```dart
 class _PantallaUsuariosState extends State<PantallaUsuarios> {
 ```
 
-## Explicación
+### Explicación
 
-Aquí se controla toda la lógica de la pantalla.
+Aquí se almacenan los datos y la lógica de la aplicación.
 
 ---
 
-# 6. Lista de Usuarios
+# 6. Lista para Guardar Usuarios
 
 ```dart
 List usuarios = [];
 ```
 
-## Explicación
+### Explicación
 
-Crea una lista vacía donde se almacenarán los usuarios obtenidos desde la API.
+Se crea una lista vacía donde se almacenarán los usuarios obtenidos desde la API.
 
-Inicialmente:
-
-```dart
-[]
-```
-
-está vacía.
-
-Después de consumir la API contendrá algo similar a:
+Ejemplo:
 
 ```json
 [
   {
-    "id":"1",
-    "name":"Juan",
-    "email":"juan@gmail.com"
+    "id": "1",
+    "name": "Juan",
+    "email": "juan@gmail.com"
   }
 ]
 ```
@@ -229,33 +219,26 @@ Después de consumir la API contendrá algo similar a:
 bool cargando = false;
 ```
 
-## Explicación
+### Explicación
 
-Variable booleana que indica si la aplicación está obteniendo información.
+Controla si el indicador de carga debe mostrarse.
 
-### Valores posibles
+Valores posibles:
 
-```dart
-true
-```
-
-Está cargando.
-
-```dart
-false
-```
-
-No está cargando.
+| Valor | Significado |
+|---------|------------|
+| true | Está cargando |
+| false | No está cargando |
 
 ---
 
 # 8. Método Obtener Datos
 
 ```dart
-Future<void> obtenerDatos() async
+void obtenerDatos() {
 ```
 
-## Explicación
+### Explicación
 
 Método encargado de conectarse a la API.
 
@@ -269,39 +252,35 @@ setState(() {
 });
 ```
 
-## Explicación
+### Explicación
 
-Actualiza la interfaz.
-
-Indica que comenzó la carga de datos.
-
-```dart
-setState()
-```
-
-Le informa a Flutter que debe reconstruir la pantalla.
+Antes de llamar a la API se activa el indicador de carga.
 
 ---
 
-# 10. Solicitud GET
+# 10. Petición GET
 
 ```dart
-final response = await http.get(
+http.get(
 ```
 
-## Explicación
+### Explicación
 
-Realiza una petición HTTP GET.
+Realiza una solicitud GET al servidor.
+
+---
 
 ```dart
 Uri.parse(
   "https://69e1842eb1cb62b9f316e8cf.mockapi.io/usuarios",
-)
+),
 ```
+
+### Explicación
 
 Convierte la URL en un objeto URI válido.
 
-La URL apunta al endpoint:
+La API consultada es:
 
 ```text
 https://69e1842eb1cb62b9f316e8cf.mockapi.io/usuarios
@@ -309,17 +288,29 @@ https://69e1842eb1cb62b9f316e8cf.mockapi.io/usuarios
 
 ---
 
-# 11. Procesar Respuesta
+# 11. Procesamiento de Respuesta
 
 ```dart
-if (response.statusCode == 200)
+.then((response) {
 ```
 
-## Explicación
+### Explicación
 
-Comprueba si la petición fue exitosa.
+Se ejecuta cuando el servidor responde.
 
-### Código
+---
+
+# 12. Validar Código de Respuesta
+
+```dart
+if (response.statusCode == 200) {
+```
+
+### Explicación
+
+Verifica si la respuesta fue exitosa.
+
+Código:
 
 ```text
 200 = OK
@@ -327,100 +318,180 @@ Comprueba si la petición fue exitosa.
 
 ---
 
-# 12. Actualizar Interfaz
+# 13. Actualizar la Interfaz
 
 ```dart
 setState(() {
 ```
 
-Permite modificar variables y actualizar la pantalla.
+### Explicación
+
+Permite actualizar la pantalla.
 
 ---
 
-# 13. Convertir JSON a Lista
+# 14. Convertir JSON a Lista
 
 ```dart
 usuarios = jsonDecode(response.body);
 ```
 
-## Explicación
+### Explicación
 
-Convierte el JSON recibido en una lista de Dart.
+Convierte el JSON recibido en una lista de objetos.
 
-### JSON recibido
+Ejemplo:
+
+Antes:
 
 ```json
 [
   {
-    "id":"1",
-    "name":"Carlos",
-    "email":"carlos@gmail.com"
+    "name": "Juan"
   }
 ]
 ```
 
-### Resultado
+Después:
 
 ```dart
-usuarios[0]["name"]
-```
-
-Retorna:
-
-```text
-Carlos
+[
+  {
+    "name": "Juan"
+  }
+]
 ```
 
 ---
 
-# 14. Ocultar Indicador de Carga
+# 15. Ocultar Indicador de Carga
 
 ```dart
 cargando = false;
 ```
 
-## Explicación
+### Explicación
 
-Indica que la carga terminó.
+Como los datos ya llegaron, se oculta el círculo de carga.
 
 ---
 
-# 15. Método Build
+# 16. Manejo de Error HTTP
+
+```dart
+else {
+```
+
+### Explicación
+
+Se ejecuta cuando la respuesta no es 200.
+
+---
+
+```dart
+setState(() {
+  cargando = false;
+});
+```
+
+### Explicación
+
+Oculta el indicador de carga.
+
+---
+
+```dart
+print("Error: ${response.statusCode}");
+```
+
+### Explicación
+
+Muestra el código de error en consola.
+
+Ejemplo:
+
+```text
+Error: 404
+```
+
+---
+
+# 17. Captura de Excepciones
+
+```dart
+.catchError((error) {
+```
+
+### Explicación
+
+Captura errores de conexión o internet.
+
+---
+
+```dart
+setState(() {
+  cargando = false;
+});
+```
+
+### Explicación
+
+Oculta el indicador de carga.
+
+---
+
+```dart
+print("Error: $error");
+```
+
+### Explicación
+
+Muestra el error en consola.
+
+---
+
+# 18. Construcción de la Interfaz
 
 ```dart
 @override
-Widget build(BuildContext context)
+Widget build(BuildContext context) {
 ```
 
-## Explicación
+### Explicación
 
-Construye toda la interfaz de usuario.
+Construye visualmente la pantalla.
 
 ---
 
-# 16. Scaffold
+# 19. Scaffold
 
 ```dart
 return Scaffold(
 ```
 
-## Explicación
+### Explicación
 
-Estructura principal de la pantalla.
+Es la estructura principal de una pantalla Flutter.
 
 ---
 
-# 17. Barra Superior
+# 20. Barra Superior
 
 ```dart
 appBar: AppBar(
 ```
 
-Crea la barra superior.
+### Explicación
+
+Crea una barra superior.
+
+---
 
 ```dart
 title: const Text("MockAPI"),
 ```
+
+### Explicación
 
 Muestra el título:
 
@@ -430,33 +501,43 @@ MockAPI
 
 ---
 
-# 18. Cuerpo de la Pantalla
+# 21. Contenido Principal
 
 ```dart
 body: Column(
 ```
 
-Organiza widgets verticalmente.
+### Explicación
+
+Organiza los widgets verticalmente.
 
 ---
 
-# 19. Botón Obtener Usuarios
+# 22. Botón
 
 ```dart
 ElevatedButton(
 ```
 
+### Explicación
+
 Crea un botón elevado.
+
+---
 
 ```dart
 onPressed: obtenerDatos,
 ```
 
-Cuando se presiona ejecuta:
+### Explicación
+
+Al presionar el botón se ejecuta:
 
 ```dart
 obtenerDatos()
 ```
+
+---
 
 ```dart
 child: const Text(
@@ -464,117 +545,115 @@ child: const Text(
 ),
 ```
 
+### Explicación
+
 Texto visible en el botón.
 
 ---
 
-# 20. Expanded
+# 23. Expanded
 
 ```dart
 Expanded(
 ```
 
-Permite que el contenido ocupe todo el espacio restante.
+### Explicación
+
+Permite que la lista ocupe todo el espacio disponible.
 
 ---
 
-# 21. Operador Ternario
+# 24. Operador Ternario
 
 ```dart
 child: cargando
 ```
 
-## Explicación
+### Explicación
 
-Evalúa la variable:
+Evalúa si está cargando.
 
-```dart
-cargando
-```
+---
 
-Si es:
+# 25. Mostrar Indicador de Carga
 
 ```dart
-true
+? const Center(
+    child: CircularProgressIndicator(),
+  )
 ```
 
-muestra:
+### Explicación
+
+Si:
+
+```dart
+cargando == true
+```
+
+se muestra:
 
 ```dart
 CircularProgressIndicator()
 ```
 
-Si es:
+---
+
+# 26. Mostrar Lista
 
 ```dart
-false
+: ListView.builder(
 ```
 
-muestra:
+### Explicación
+
+Si:
 
 ```dart
-ListView.builder()
+cargando == false
 ```
+
+se muestra la lista.
 
 ---
 
-# 22. Indicador de Carga
-
-```dart
-Center(
-  child: CircularProgressIndicator(),
-)
-```
-
-## Explicación
-
-Muestra una animación circular indicando que la aplicación está esperando datos.
-
----
-
-# 23. Lista Dinámica
-
-```dart
-ListView.builder(
-```
-
-## Explicación
-
-Genera una lista de elementos dinámicamente.
+# 27. Cantidad de Elementos
 
 ```dart
 itemCount: usuarios.length,
 ```
 
-Cantidad de usuarios obtenidos.
+### Explicación
+
+Indica cuántos usuarios se mostrarán.
 
 ---
 
-# 24. Constructor de Elementos
+# 28. Constructor de Cada Elemento
 
 ```dart
-itemBuilder: (context, index)
+itemBuilder: (context, index) {
 ```
 
-## Explicación
+### Explicación
 
 Construye cada fila de la lista.
 
 ---
 
-# 25. ListTile
+# 29. ListTile
 
 ```dart
 return ListTile(
 ```
 
-## Explicación
+### Explicación
 
-Representa una fila de información.
+Representa un elemento visual de la lista.
 
 ---
 
-# 26. Nombre del Usuario
+# 30. Nombre del Usuario
 
 ```dart
 title: Text(
@@ -582,11 +661,11 @@ title: Text(
 ),
 ```
 
-## Explicación
+### Explicación
 
-Muestra el nombre.
+Muestra el nombre del usuario.
 
-### Ejemplo
+Ejemplo:
 
 ```text
 Juan Pérez
@@ -594,63 +673,35 @@ Juan Pérez
 
 ---
 
-# 27. Información Adicional
+# 31. Información Adicional
 
 ```dart
 subtitle: Text(
 ```
 
+### Explicación
+
 Muestra información secundaria.
+
+---
 
 ```dart
 "Email: ${usuarios[index]["email"]}\n"
+"ID: ${usuarios[index]["id"]}",
 ```
 
-Muestra el correo electrónico.
+### Explicación
 
-```dart
-"ID: ${usuarios[index]["id"]}"
-```
-
-Muestra el ID del usuario.
-
-### Resultado visual
+Muestra:
 
 ```text
-Juan Pérez
-
 Email: juan@gmail.com
 ID: 1
 ```
 
 ---
 
-# Flujo Completo del Programa
-
-```text
-Usuario presiona botón
-            ↓
-obtenerDatos()
-            ↓
-cargando = true
-            ↓
-Se muestra CircularProgressIndicator
-            ↓
-Petición GET a MockAPI
-            ↓
-Servidor responde
-            ↓
-jsonDecode(response.body)
-            ↓
-Usuarios guardados en la lista
-            ↓
-cargando = false
-            ↓
-Se oculta el loading
-            ↓
-ListView.builder muestra los usuarios
-```
-##Codigo completo sin usar Async
+# codigo completo 
 ```dart
 import 'package:flutter/material.dart';
 import 'dart:convert';
