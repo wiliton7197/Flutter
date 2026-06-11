@@ -147,7 +147,43 @@ Se utiliza cuando la información mostrada es fija.
 ### Ejemplo
 
 ```dart
-Text("Hola Mundo")
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+ Widget build(BuildContext context){
+  return const MaterialApp(
+    home: Center(
+      child: Text('hola mundo'),
+    ),
+  );
+ }
+}
+```
+### Ejemplo que podria cambiar pero dependera de lo que nostros le mandamos 
+```dart
+void main() {
+  runApp(
+    const MyApp(nombre: "Juan"),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  final String nombre;
+
+  const MyApp({super.key, required this.nombre});
+
+  @override
+ Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Text("Hola $nombre"),
+        ),
+      ),
+    );
+ }
+}
 ```
 
 ### Características
