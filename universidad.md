@@ -2,7 +2,7 @@
 
 ## Introducción
 
-Este proyecto desarrollado en Flutter permite consultar una API pública de universidades utilizando peticiones HTTP. El usuario ingresa el nombre de un país, presiona el botón **Buscar** y la aplicación muestra una lista de universidades pertenecientes a dicho país.
+Este proyecto desarrollado en Flutter consume la API pública de Hipolabs para mostrar información de universidades de diferentes países. La aplicación carga una lista de universidades al iniciar y permite filtrar los resultados escribiendo el nombre de un país.
 
 ---
 
@@ -10,33 +10,51 @@ Este proyecto desarrollado en Flutter permite consultar una API pública de univ
 
 ```dart
 import 'package:flutter/material.dart';
+```
+
+### Explicación
+
+Importa la biblioteca principal de Flutter para crear interfaces gráficas.
+
+Permite utilizar widgets como:
+
+* MaterialApp
+* Scaffold
+* AppBar
+* TextField
+* ListView
+* Card
+* ElevatedButton
+
+---
+
+```dart
 import 'dart:convert';
+```
+
+### Explicación
+
+Importa herramientas para trabajar con JSON.
+
+Se utiliza para convertir la respuesta de la API en objetos que Flutter pueda manipular.
+
+Ejemplo:
+
+```dart
+jsonDecode(respuesta.body);
+```
+
+---
+
+```dart
 import 'package:http/http.dart' as http;
 ```
 
 ### Explicación
 
-```dart
-import 'package:flutter/material.dart';
-```
+Permite realizar peticiones HTTP.
 
-Importa la librería principal de Flutter para construir la interfaz gráfica.
-
----
-
-```dart
-import 'dart:convert';
-```
-
-Permite convertir datos JSON en objetos de Dart mediante funciones como `jsonDecode()`.
-
----
-
-```dart
-import 'package:http/http.dart' as http;
-```
-
-Importa el paquete HTTP para realizar solicitudes a APIs desde internet.
+Gracias a esta librería la aplicación puede conectarse a internet y consultar la API.
 
 ---
 
@@ -50,19 +68,13 @@ void main() {
 
 ### Explicación
 
-```dart
-void main()
-```
+Es el punto de entrada de la aplicación.
 
-Es el punto de entrada de toda aplicación Flutter.
+Cuando Flutter inicia:
 
----
-
-```dart
-runApp(const MyApp());
-```
-
-Inicia la aplicación mostrando el widget principal llamado `MyApp`.
+1. Ejecuta `main()`
+2. Ejecuta `runApp()`
+3. Muestra el widget principal `MyApp`
 
 ---
 
@@ -72,44 +84,85 @@ Inicia la aplicación mostrando el widget principal llamado `MyApp`.
 class Universidad {
 ```
 
-Se crea una clase para representar cada universidad obtenida desde la API.
+### Explicación
+
+Representa una universidad dentro de la aplicación.
+
+Cada universidad tendrá:
+
+* nombre
+* país
+* código de país
+* dominios
+* páginas web
 
 ---
 
 ```dart
 final String nombre;
-final String sitioWeb;
+final String pais;
+final String codigoPais;
+final List<dynamic> dominios;
+final List<dynamic> paginasWeb;
 ```
 
-Variables que almacenan:
+### Explicación
 
-* Nombre de la universidad.
-* Sitio web de la universidad.
+Son los atributos del objeto Universidad.
 
-La palabra `final` indica que el valor no cambiará después de ser asignado.
+Ejemplo de una universidad:
+
+```json
+{
+  "name": "Universidad Nacional de Cajamarca",
+  "country": "Peru",
+  "alpha_two_code": "PE",
+  "domains": ["unc.edu.pe"],
+  "web_pages": ["http://www.unc.edu.pe"]
+}
+```
 
 ---
 
 ```dart
 Universidad({
   required this.nombre,
-  required this.sitioWeb,
+  required this.pais,
+  required this.codigoPais,
+  required this.dominios,
+  required this.paginasWeb,
 });
 ```
 
+### Explicación
+
 Constructor de la clase.
 
-La palabra `required` obliga a enviar valores para ambas propiedades.
+Permite crear objetos Universidad.
+
+Ejemplo:
+
+```dart
+Universidad(
+ nombre: "UNC",
+ pais: "Peru",
+ codigoPais: "PE",
+ dominios: [],
+ paginasWeb: []
+);
+```
 
 ---
 
-## Método fromJson
+# 4. Factory Constructor
 
 ```dart
 factory Universidad.fromJson(Map<String, dynamic> json)
 ```
 
-Permite convertir un objeto JSON en un objeto Universidad.
+### Explicación
+
+Convierte un objeto JSON recibido desde la API en un objeto Universidad.
 
 ---
 
@@ -117,60 +170,85 @@ Permite convertir un objeto JSON en un objeto Universidad.
 nombre: json['name'] ?? 'Sin nombre',
 ```
 
-Obtiene el valor del campo `name`.
+### Explicación
 
-Si no existe, muestra `"Sin nombre"`.
+Obtiene el nombre.
+
+Si no existe:
+
+```dart
+Sin nombre
+```
 
 ---
 
 ```dart
-sitioWeb: (json['web_pages'] != null &&
-        json['web_pages'].isNotEmpty)
+pais: json['country'] ?? 'Sin país',
 ```
 
-Verifica que exista la lista de sitios web y que no esté vacía.
+### Explicación
+
+Obtiene el país.
 
 ---
 
 ```dart
-? json['web_pages'][0]
+codigoPais: json['alpha_two_code'] ?? '',
 ```
 
-Obtiene el primer sitio web.
+### Explicación
+
+Obtiene el código internacional del país.
+
+Ejemplos:
+
+```text
+PE
+MX
+CO
+AR
+```
 
 ---
 
 ```dart
-: 'Sin sitio web'
+dominios: json['domains'] ?? [],
 ```
 
-Si no existe un sitio web, muestra ese texto.
+### Explicación
+
+Obtiene la lista de dominios.
+
+Ejemplo:
+
+```text
+unc.edu.pe
+unmsm.edu.pe
+```
 
 ---
 
-# 4. Widget Principal
+```dart
+paginasWeb: json['web_pages'] ?? [],
+```
+
+### Explicación
+
+Obtiene las páginas web oficiales.
+
+---
+
+# 5. Clase Principal MyApp
 
 ```dart
 class MyApp extends StatelessWidget
 ```
 
-Representa la aplicación principal.
+### Explicación
 
----
+Widget principal de la aplicación.
 
-```dart
-const MyApp({super.key});
-```
-
-Constructor del widget.
-
----
-
-```dart
-Widget build(BuildContext context)
-```
-
-Método encargado de construir la interfaz.
+Es Stateless porque no cambia su estado.
 
 ---
 
@@ -178,7 +256,9 @@ Método encargado de construir la interfaz.
 return const MaterialApp(
 ```
 
-Crea la aplicación utilizando Material Design.
+### Explicación
+
+MaterialApp configura toda la aplicación.
 
 ---
 
@@ -186,7 +266,9 @@ Crea la aplicación utilizando Material Design.
 debugShowCheckedModeBanner: false,
 ```
 
-Oculta la cinta roja de "Debug".
+### Explicación
+
+Oculta la etiqueta DEBUG.
 
 ---
 
@@ -194,36 +276,52 @@ Oculta la cinta roja de "Debug".
 home: PantallaUniversidades(),
 ```
 
-Indica cuál será la pantalla inicial.
+### Explicación
+
+Define la pantalla inicial.
 
 ---
 
-# 5. StatefulWidget
+# 6. PantallaUniversidades
 
 ```dart
 class PantallaUniversidades extends StatefulWidget
 ```
 
-Se utiliza porque la pantalla cambia constantemente cuando llegan datos desde internet.
+### Explicación
+
+Se usa StatefulWidget porque los datos cambian cuando se consulta la API.
 
 ---
+
+# 7. Estado de la Pantalla
 
 ```dart
-State<PantallaUniversidades> createState()
+class _PantallaUniversidadesState
 ```
 
-Crea el estado asociado al widget.
+### Explicación
+
+Aquí se almacena toda la lógica de la aplicación.
 
 ---
-
-# 6. Variables de Estado
 
 ```dart
 final TextEditingController controladorPais =
     TextEditingController();
 ```
 
-Controla el contenido escrito dentro del TextField.
+### Explicación
+
+Controla el contenido del TextField.
+
+Permite leer lo que escribe el usuario.
+
+Ejemplo:
+
+```dart
+controladorPais.text
+```
 
 ---
 
@@ -231,9 +329,9 @@ Controla el contenido escrito dentro del TextField.
 List<Universidad> universidades = [];
 ```
 
-Lista donde se almacenarán las universidades obtenidas.
+### Explicación
 
-Inicialmente está vacía.
+Lista donde se almacenan las universidades obtenidas de la API.
 
 ---
 
@@ -241,36 +339,50 @@ Inicialmente está vacía.
 bool cargando = false;
 ```
 
-Variable para controlar cuándo mostrar el indicador de carga.
+### Explicación
 
-* false = no está cargando.
-* true = está cargando.
+Controla si la aplicación está cargando datos.
 
 ---
 
-# 7. Función HTTP
+# 8. initState()
 
 ```dart
-Future<void> buscarUniversidades() async
+@override
+void initState() {
 ```
 
-Función asíncrona encargada de consultar la API.
+### Explicación
+
+Se ejecuta una sola vez cuando la pantalla es creada.
 
 ---
-
-## Validación del campo
 
 ```dart
-if (controladorPais.text.trim().isEmpty) {
-  return;
-}
+cargarTodasLasUniversidades();
 ```
 
-Si el usuario no escribe ningún país, la función termina.
+### Explicación
+
+Carga automáticamente los datos al iniciar.
 
 ---
 
-## Activar carga
+# 9. Método cargarTodasLasUniversidades()
+
+```dart
+Future<void> cargarTodasLasUniversidades() async
+```
+
+### Explicación
+
+Obtiene los datos de la API.
+
+Future significa que la operación tardará un tiempo.
+
+async permite usar await.
+
+---
 
 ```dart
 setState(() {
@@ -278,646 +390,413 @@ setState(() {
 });
 ```
 
-Actualiza la interfaz para mostrar el CircularProgressIndicator.
+### Explicación
+
+Activa el indicador de carga.
 
 ---
-
-## Bloque try
-
-```dart
-try {
-```
-
-Permite capturar errores durante la petición.
-
----
-
-## Construcción de URL
 
 ```dart
 final url = Uri.parse(
-  "http://universities.hipolabs.com/search?country=${controladorPais.text}",
+ "http://universities.hipolabs.com/search?name="
 );
 ```
 
-Construye la dirección web usando el país ingresado.
+### Explicación
 
-Ejemplo:
-
-```text
-http://universities.hipolabs.com/search?country=Peru
-```
+Construye la URL de consulta.
 
 ---
-
-## Solicitud HTTP
 
 ```dart
 final respuesta = await http.get(url);
 ```
 
-Envía una petición GET a la API.
+### Explicación
 
-La palabra `await` espera la respuesta antes de continuar.
+Realiza una petición GET.
+
+El programa espera la respuesta.
 
 ---
-
-## Verificar respuesta
 
 ```dart
-if (respuesta.statusCode == 200)
+respuesta.statusCode == 200
 ```
 
-Comprueba si la petición fue exitosa.
+### Explicación
 
-Código 200 significa éxito.
+Verifica que la consulta fue exitosa.
+
+200 significa éxito.
 
 ---
-
-## Convertir JSON
 
 ```dart
-List datos = jsonDecode(respuesta.body);
+final List datos =
+    jsonDecode(respuesta.body);
 ```
 
-Convierte el JSON recibido en una lista de objetos Dart.
+### Explicación
+
+Convierte el JSON recibido en una lista.
 
 ---
-
-## Convertir a objetos Universidad
 
 ```dart
 universidades = datos
-    .map((json) => Universidad.fromJson(json))
+    .map((e) => Universidad.fromJson(e))
     .toList();
 ```
 
-Recorre cada elemento JSON y lo convierte en un objeto Universidad.
+### Explicación
+
+Convierte cada JSON en un objeto Universidad.
 
 ---
 
-## Error de conexión
+# 10. Método buscarUniversidades()
 
 ```dart
-} catch (e) {
+Future<void> buscarUniversidades() async
 ```
 
-Captura cualquier error.
+### Explicación
 
-Por ejemplo:
-
-* Sin internet.
-* Error del servidor.
-* URL incorrecta.
+Permite filtrar universidades por país.
 
 ---
 
 ```dart
-universidades = [];
+final pais =
+    controladorPais.text.trim();
 ```
 
-Vacía la lista si ocurre un error.
+### Explicación
 
----
+Obtiene el texto escrito por el usuario.
 
-## Finalizar carga
-
-```dart
-setState(() {
-  cargando = false;
-});
-```
-
-Oculta el indicador de progreso.
-
----
-
-# 8. Interfaz de Usuario
-
-## Scaffold
-
-```dart
-return Scaffold(
-```
-
-Estructura principal de la pantalla.
-
----
-
-## AppBar
-
-```dart
-appBar: AppBar(
-```
-
-Barra superior de la aplicación.
+trim elimina espacios.
 
 ---
 
 ```dart
-title: const Text("Buscador de Universidades"),
+if (pais.isEmpty)
 ```
 
-Título mostrado en la barra.
+### Explicación
+
+Si el usuario no escribe nada.
 
 ---
 
 ```dart
-centerTitle: true,
+cargarTodasLasUniversidades();
 ```
 
-Centra el título.
+### Explicación
 
----
-
-# 9. Padding
-
-```dart
-Padding(
-  padding: const EdgeInsets.all(16),
-```
-
-Agrega espacio alrededor de todo el contenido.
-
----
-
-# 10. Column
-
-```dart
-Column(
-```
-
-Organiza los widgets verticalmente.
-
----
-
-# 11. TextField
-
-```dart
-TextField(
-```
-
-Campo para ingresar el nombre del país.
+Vuelve a cargar todos los registros.
 
 ---
 
 ```dart
-controller: controladorPais,
+"http://universities.hipolabs.com/search?country=$pais"
 ```
 
-Conecta el TextField con el controlador.
+### Explicación
+
+Filtra por país.
+
+Ejemplo:
+
+```text
+country=Peru
+country=Mexico
+country=Colombia
+```
+
+---
+
+# 11. Método dispose()
+
+```dart
+@override
+void dispose()
+```
+
+### Explicación
+
+Se ejecuta cuando la pantalla se destruye.
 
 ---
 
 ```dart
-labelText: "Ingrese un país",
+controladorPais.dispose();
 ```
 
-Texto de ayuda mostrado al usuario.
+### Explicación
+
+Libera memoria utilizada por el TextEditingController.
 
 ---
 
-# 12. Botón Buscar
+# 12. Método construirTarjeta()
 
 ```dart
-ElevatedButton(
+Widget construirTarjeta(
+  Universidad universidad
+)
 ```
 
-Botón que inicia la búsqueda.
+### Explicación
+
+Construye visualmente cada universidad.
 
 ---
-
-```dart
-onPressed: buscarUniversidades,
-```
-
-Ejecuta la función HTTP al hacer clic.
-
----
-
-```dart
-child: const Text("Buscar"),
-```
-
-Texto del botón.
-
----
-
-# 13. Expanded
-
-```dart
-Expanded(
-```
-
-Hace que la lista ocupe el espacio disponible.
-
----
-
-# 14. Operador Ternario
-
-```dart
-cargando
-```
-
-Evalúa si la aplicación está cargando.
-
----
-
-## Si está cargando
-
-```dart
-CircularProgressIndicator()
-```
-
-Muestra un círculo girando.
-
----
-
-## Si no hay resultados
-
-```dart
-universidades.isEmpty
-```
-
-Comprueba si la lista está vacía.
-
----
-
-```dart
-Text("No hay resultados")
-```
-
-Muestra un mensaje informativo.
-
----
-
-# 15. ListView.builder
-
-```dart
-ListView.builder(
-```
-
-Genera una lista dinámica.
-
----
-
-```dart
-itemCount: universidades.length,
-```
-
-Cantidad de universidades encontradas.
-
----
-
-```dart
-itemBuilder: (context, index)
-```
-
-Construye cada elemento de la lista.
-
----
-
-```dart
-final universidad = universidades[index];
-```
-
-Obtiene la universidad actual.
-
----
-
-# 16. Card
 
 ```dart
 Card(
 ```
 
-Crea una tarjeta para mostrar la información.
+### Explicación
 
----
-
-# 17. ListTile
-
-```dart
-ListTile(
-```
-
-Widget especializado para mostrar datos organizados.
+Crea una tarjeta.
 
 ---
 
 ```dart
-leading: const Icon(Icons.school),
+Icon(Icons.school)
 ```
 
-Muestra un ícono de escuela.
+### Explicación
+
+Muestra un ícono de educación.
 
 ---
 
 ```dart
-title: Text(universidad.nombre),
+universidad.nombre
 ```
+
+### Explicación
 
 Muestra el nombre de la universidad.
 
 ---
 
 ```dart
-subtitle: Text(universidad.sitioWeb),
+universidad.pais
 ```
 
-Muestra el sitio web de la universidad.
+### Explicación
+
+Muestra el país.
 
 ---
 
-# Flujo General del Programa
-
-1. El usuario escribe un país.
-2. Presiona el botón Buscar.
-3. Se activa el indicador de carga.
-4. Flutter realiza una petición HTTP.
-5. La API devuelve datos JSON.
-6. Los datos se convierten en objetos Universidad.
-7. La lista se actualiza.
-8. Se muestran las universidades encontradas.
-9. Si ocurre un error o no existen resultados, se muestra un mensaje informativo.
-10. El indicador de carga desaparece.
-### Codigo 
 ```dart
-```dart
-import 'package:flutter/material.dart';
-
-// Permite convertir JSON a objetos de Dart
-import 'dart:convert';
-
-// Librería para realizar peticiones HTTP
-import 'package:http/http.dart' as http;
-
-void main() {
-  // Inicia la aplicación
-  runApp(const MyApp());
-}
-
-// ======================================================
-// MODELO DE DATOS (REQUISITO: Arquitectura de Datos)
-// ======================================================
-class Universidad {
-
-  // Atributos de la universidad
-  final String nombre;
-  final String sitioWeb;
-
-  // Constructor
-  Universidad({
-    required this.nombre,
-    required this.sitioWeb,
-  });
-
-  // Convierte JSON en un objeto Universidad
-  // Además valida campos nulos o faltantes
-  factory Universidad.fromJson(Map<String, dynamic> json) {
-    return Universidad(
-
-      // Si no existe "name" se muestra "Sin nombre"
-      nombre: json['name'] ?? 'Sin nombre',
-
-      // Verifica que exista la lista web_pages
-      sitioWeb: (json['web_pages'] != null &&
-              json['web_pages'].isNotEmpty)
-          ? json['web_pages'][0]
-          : 'Sin sitio web',
-    );
-  }
-}
-
-// ======================================================
-// WIDGET PRINCIPAL
-// ======================================================
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-
-    return const MaterialApp(
-
-      // Oculta la etiqueta DEBUG
-      debugShowCheckedModeBanner: false,
-
-      // Pantalla inicial
-      home: PantallaUniversidades(),
-    );
-  }
-}
-
-// ======================================================
-// PANTALLA PRINCIPAL
-// ======================================================
-class PantallaUniversidades extends StatefulWidget {
-  const PantallaUniversidades({super.key});
-
-  @override
-  State<PantallaUniversidades> createState() =>
-      _PantallaUniversidadesState();
-}
-
-class _PantallaUniversidadesState
-    extends State<PantallaUniversidades> {
-
-  // Controlador para leer el texto ingresado
-  final TextEditingController controladorPais =
-      TextEditingController();
-
-  // Lista que almacenará las universidades obtenidas
-  List<Universidad> universidades = [];
-
-  // Variable para controlar el estado de carga
-  bool cargando = false;
-
-  // ======================================================
-  // FUNCIÓN HTTP
-  // (REQUISITO: Comunicación separada del build)
-  // ======================================================
-  Future<void> buscarUniversidades() async {
-
-    // Si el usuario no escribe nada
-    // la función termina
-    if (controladorPais.text.trim().isEmpty) {
-      return;
-    }
-
-    // ==================================================
-    // ESTADO DE CARGA
-    // (REQUISITO: Gestión de Estado)
-    // ==================================================
-    setState(() {
-      cargando = true;
-    });
-
-    try {
-
-      // Construcción de la URL
-      final url = Uri.parse(
-        "http://universities.hipolabs.com/search?country=${controladorPais.text}",
-      );
-
-      // Petición GET a la API
-      final respuesta = await http.get(url);
-
-      // Si la respuesta fue correcta
-      if (respuesta.statusCode == 200) {
-
-        // Convierte JSON a lista
-        List datos = jsonDecode(respuesta.body);
-
-        // Convierte cada elemento JSON
-        // en un objeto Universidad
-        universidades = datos
-            .map((json) => Universidad.fromJson(json))
-            .toList();
-
-      } else {
-
-        // Si ocurre un error
-        universidades = [];
-      }
-
-    } catch (e) {
-
-      // Manejo de excepciones
-      universidades = [];
-    }
-
-    // ==================================================
-    // FINALIZA EL ESTADO DE CARGA
-    // ==================================================
-    setState(() {
-      cargando = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Scaffold(
-
-      // Barra superior
-      appBar: AppBar(
-        title: const Text(
-          "Buscador de Universidades",
-        ),
-        centerTitle: true,
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-
-        child: Column(
-          children: [
-
-            // ==========================================
-            // TEXTFIELD
-            // (REQUISITO UX/UI)
-            // ==========================================
-            TextField(
-              controller: controladorPais,
-
-              decoration: const InputDecoration(
-                labelText: "Ingrese un país",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // ==========================================
-            // BOTÓN BUSCAR
-            // (REQUISITO UX/UI)
-            // ==========================================
-            ElevatedButton(
-
-              // Ejecuta la búsqueda
-              onPressed: buscarUniversidades,
-
-              child: const Text("Buscar"),
-            ),
-
-            const SizedBox(height: 20),
-
-            Expanded(
-
-              // ==========================================
-              // ESTADO DE CARGA
-              // ==========================================
-              child: cargando
-
-                  ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
-
-                  // ======================================
-                  // ESTADO SIN RESULTADOS
-                  // ======================================
-                  : universidades.isEmpty
-
-                      ? const Center(
-                          child: Text(
-                            "No hay resultados",
-                            style: TextStyle(
-                              fontSize: 18,
-                            ),
-                          ),
-                        )
-
-                      // ======================================
-                      // ESTADO DE RESULTADOS
-                      // (REQUISITO: Gestión de Estado)
-                      // ======================================
-                      : ListView.builder(
-
-                          itemCount:
-                              universidades.length,
-
-                          itemBuilder:
-                              (context, index) {
-
-                            // Universidad actual
-                            final universidad =
-                                universidades[index];
-
-                            return Card(
-
-                              margin:
-                                  const EdgeInsets.symmetric(
-                                vertical: 5,
-                              ),
-
-                              child: ListTile(
-
-                                // Ícono
-                                leading: const Icon(
-                                  Icons.school,
-                                ),
-
-                                // Nombre universidad
-                                title: Text(
-                                  universidad.nombre,
-                                ),
-
-                                // Sitio web
-                                subtitle: Text(
-                                  universidad.sitioWeb,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+universidad.codigoPais
 ```
 
+### Explicación
+
+Muestra el código del país.
+
+---
+
+```dart
+universidad.dominios.join(", ")
 ```
+
+### Explicación
+
+Une todos los dominios en una sola cadena.
+
+Ejemplo:
+
+```text
+unc.edu.pe, unmsm.edu.pe
+```
+
+---
+
+```dart
+universidad.paginasWeb.join("\n")
+```
+
+### Explicación
+
+Muestra las páginas web en líneas separadas.
+
+---
+
+# 13. Método build()
+
+```dart
+Widget build(BuildContext context)
+```
+
+### Explicación
+
+Construye toda la interfaz visual.
+
+---
+
+# 14. Scaffold
+
+```dart
+Scaffold(
+```
+
+### Explicación
+
+Estructura principal de la pantalla.
+
+---
+
+# 15. AppBar
+
+```dart
+AppBar(
+ title: Text("Universidades del Mundo")
+)
+```
+
+### Explicación
+
+Barra superior de la aplicación.
+
+---
+
+# 16. TextField
+
+```dart
+TextField(
+ controller: controladorPais
+)
+```
+
+### Explicación
+
+Campo donde el usuario escribe el país.
+
+---
+
+```dart
+onSubmitted: (_)
+```
+
+### Explicación
+
+Permite buscar al presionar Enter.
+
+---
+
+# 17. IconButton
+
+```dart
+IconButton(
+ icon: Icon(Icons.search)
+)
+```
+
+### Explicación
+
+Botón de búsqueda.
+
+---
+
+```dart
+onPressed: buscarUniversidades
+```
+
+### Explicación
+
+Ejecuta la búsqueda.
+
+---
+
+# 18. Expanded
+
+```dart
+Expanded(
+```
+
+### Explicación
+
+Hace que la lista ocupe el espacio disponible.
+
+---
+
+# 19. Indicador de Carga
+
+```dart
+CircularProgressIndicator()
+```
+
+### Explicación
+
+Muestra una animación mientras se consultan datos.
+
+---
+
+# 20. ListView.builder
+
+```dart
+ListView.builder(
+```
+
+### Explicación
+
+Crea una lista dinámica.
+
+Solo construye los elementos visibles para mejorar el rendimiento.
+
+---
+
+```dart
+itemCount: universidades.length
+```
+
+### Explicación
+
+Cantidad de universidades mostradas.
+
+---
+
+```dart
+itemBuilder:
+```
+
+### Explicación
+
+Construye cada elemento de la lista.
+
+---
+
+```dart
+return construirTarjeta(
+  universidades[index]
+);
+```
+
+### Explicación
+
+Genera una tarjeta para cada universidad obtenida desde la API.
+
+---
+
+# Resumen
+
+La aplicación:
+
+1. Se inicia con `main()`.
+2. Consulta la API de universidades.
+3. Convierte JSON a objetos Universidad.
+4. Guarda los datos en una lista.
+5. Muestra las universidades en tarjetas.
+6. Permite filtrar por país.
+7. Actualiza la interfaz usando `setState()`.
+8. Utiliza `ListView.builder()` para mostrar los resultados eficientemente.
+   """
