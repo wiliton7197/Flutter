@@ -641,3 +641,283 @@ Muestra el sitio web de la universidad.
 8. Se muestran las universidades encontradas.
 9. Si ocurre un error o no existen resultados, se muestra un mensaje informativo.
 10. El indicador de carga desaparece.
+### Codigo 
+```dart
+```dart
+import 'package:flutter/material.dart';
+
+// Permite convertir JSON a objetos de Dart
+import 'dart:convert';
+
+// Librería para realizar peticiones HTTP
+import 'package:http/http.dart' as http;
+
+void main() {
+  // Inicia la aplicación
+  runApp(const MyApp());
+}
+
+// ======================================================
+// MODELO DE DATOS (REQUISITO: Arquitectura de Datos)
+// ======================================================
+class Universidad {
+
+  // Atributos de la universidad
+  final String nombre;
+  final String sitioWeb;
+
+  // Constructor
+  Universidad({
+    required this.nombre,
+    required this.sitioWeb,
+  });
+
+  // Convierte JSON en un objeto Universidad
+  // Además valida campos nulos o faltantes
+  factory Universidad.fromJson(Map<String, dynamic> json) {
+    return Universidad(
+
+      // Si no existe "name" se muestra "Sin nombre"
+      nombre: json['name'] ?? 'Sin nombre',
+
+      // Verifica que exista la lista web_pages
+      sitioWeb: (json['web_pages'] != null &&
+              json['web_pages'].isNotEmpty)
+          ? json['web_pages'][0]
+          : 'Sin sitio web',
+    );
+  }
+}
+
+// ======================================================
+// WIDGET PRINCIPAL
+// ======================================================
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+
+    return const MaterialApp(
+
+      // Oculta la etiqueta DEBUG
+      debugShowCheckedModeBanner: false,
+
+      // Pantalla inicial
+      home: PantallaUniversidades(),
+    );
+  }
+}
+
+// ======================================================
+// PANTALLA PRINCIPAL
+// ======================================================
+class PantallaUniversidades extends StatefulWidget {
+  const PantallaUniversidades({super.key});
+
+  @override
+  State<PantallaUniversidades> createState() =>
+      _PantallaUniversidadesState();
+}
+
+class _PantallaUniversidadesState
+    extends State<PantallaUniversidades> {
+
+  // Controlador para leer el texto ingresado
+  final TextEditingController controladorPais =
+      TextEditingController();
+
+  // Lista que almacenará las universidades obtenidas
+  List<Universidad> universidades = [];
+
+  // Variable para controlar el estado de carga
+  bool cargando = false;
+
+  // ======================================================
+  // FUNCIÓN HTTP
+  // (REQUISITO: Comunicación separada del build)
+  // ======================================================
+  Future<void> buscarUniversidades() async {
+
+    // Si el usuario no escribe nada
+    // la función termina
+    if (controladorPais.text.trim().isEmpty) {
+      return;
+    }
+
+    // ==================================================
+    // ESTADO DE CARGA
+    // (REQUISITO: Gestión de Estado)
+    // ==================================================
+    setState(() {
+      cargando = true;
+    });
+
+    try {
+
+      // Construcción de la URL
+      final url = Uri.parse(
+        "http://universities.hipolabs.com/search?country=${controladorPais.text}",
+      );
+
+      // Petición GET a la API
+      final respuesta = await http.get(url);
+
+      // Si la respuesta fue correcta
+      if (respuesta.statusCode == 200) {
+
+        // Convierte JSON a lista
+        List datos = jsonDecode(respuesta.body);
+
+        // Convierte cada elemento JSON
+        // en un objeto Universidad
+        universidades = datos
+            .map((json) => Universidad.fromJson(json))
+            .toList();
+
+      } else {
+
+        // Si ocurre un error
+        universidades = [];
+      }
+
+    } catch (e) {
+
+      // Manejo de excepciones
+      universidades = [];
+    }
+
+    // ==================================================
+    // FINALIZA EL ESTADO DE CARGA
+    // ==================================================
+    setState(() {
+      cargando = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+
+      // Barra superior
+      appBar: AppBar(
+        title: const Text(
+          "Buscador de Universidades",
+        ),
+        centerTitle: true,
+      ),
+
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+
+        child: Column(
+          children: [
+
+            // ==========================================
+            // TEXTFIELD
+            // (REQUISITO UX/UI)
+            // ==========================================
+            TextField(
+              controller: controladorPais,
+
+              decoration: const InputDecoration(
+                labelText: "Ingrese un país",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // ==========================================
+            // BOTÓN BUSCAR
+            // (REQUISITO UX/UI)
+            // ==========================================
+            ElevatedButton(
+
+              // Ejecuta la búsqueda
+              onPressed: buscarUniversidades,
+
+              child: const Text("Buscar"),
+            ),
+
+            const SizedBox(height: 20),
+
+            Expanded(
+
+              // ==========================================
+              // ESTADO DE CARGA
+              // ==========================================
+              child: cargando
+
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+
+                  // ======================================
+                  // ESTADO SIN RESULTADOS
+                  // ======================================
+                  : universidades.isEmpty
+
+                      ? const Center(
+                          child: Text(
+                            "No hay resultados",
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
+                        )
+
+                      // ======================================
+                      // ESTADO DE RESULTADOS
+                      // (REQUISITO: Gestión de Estado)
+                      // ======================================
+                      : ListView.builder(
+
+                          itemCount:
+                              universidades.length,
+
+                          itemBuilder:
+                              (context, index) {
+
+                            // Universidad actual
+                            final universidad =
+                                universidades[index];
+
+                            return Card(
+
+                              margin:
+                                  const EdgeInsets.symmetric(
+                                vertical: 5,
+                              ),
+
+                              child: ListTile(
+
+                                // Ícono
+                                leading: const Icon(
+                                  Icons.school,
+                                ),
+
+                                // Nombre universidad
+                                title: Text(
+                                  universidad.nombre,
+                                ),
+
+                                // Sitio web
+                                subtitle: Text(
+                                  universidad.sitioWeb,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+```
